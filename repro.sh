@@ -7,12 +7,18 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 A=/tmp/aaa/app
 B=/tmp/bbbbbbbbbb/app
 
+# Stage through a temp dir first, so this works even when the repo itself is cloned
+# somewhere under /tmp/aaa.
+STAGE="$(mktemp -d)"
+cp -R "$HERE/." "$STAGE/"
+rm -rf "$STAGE/.git" "$STAGE/ios" "$STAGE/android" "$STAGE/node_modules"
+
 rm -rf /tmp/aaa /tmp/bbbbbbbbbb
 mkdir -p /tmp/aaa /tmp/bbbbbbbbbb
 
 # Install once, then copy, so both trees are byte-identical and only the path differs.
-cp -R "$HERE" "$A"
-rm -rf "$A/.git" "$A/ios" "$A/android" "$A/node_modules"
+cp -R "$STAGE" "$A"
+rm -rf "$STAGE"
 (cd "$A" && npm install)
 cp -R "$A" "$B"
 
